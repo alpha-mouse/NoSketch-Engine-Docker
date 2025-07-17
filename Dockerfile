@@ -20,8 +20,7 @@ RUN apt-get update && \
         debmake \
         javahelper \
         autoconf-archive \
-        dh-python && \
-    rm -rf /var/lib/apt/lists/*
+        dh-python
 
 ## Build noske components
 COPY noske_files/* /tmp/noske_files/
@@ -81,13 +80,30 @@ RUN tar -xvf crystal* && \
     echo '-i /var/www/crystal/config.js' >> debian/postinst && \
     debuild -d -us -uc
 
+RUN cp -r /tmp/noske_files /tmp/noske_files_2
+
+RUN apt-get install -y \
+		python3-prctl \
+		python3-openpyxl \
+		/tmp/noske_files/*.deb
+
+RUN ln -s /usr/lib/python3.11/site-packages/manatee.py /usr/lib/python3/dist-packages/manatee.py && \
+    ln -s /usr/lib/python3.11/site-packages/_manatee.so /usr/lib/python3/dist-packages/_manatee.so && \
+    ln -s /usr/lib/python3.11/site-packages/_manatee.a /usr/lib/python3/dist-packages/_manatee.a && \
+    ln -s /usr/lib/python3.11/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la
+
+COPY conf/*.sh /usr/local/bin/
+COPY corpora /corpora
+RUN /usr/local/bin/compile.sh
+RUN rm /corpora/**/*.vert
+
 # The actual image
 
 ## From official Debian 12 Bookworm image pinned by its name bookworm-slim
 FROM debian:bookworm-slim
 
 ## Copy deb packages built in the previous step
-COPY --from=build /tmp/noske_files/*.deb /tmp/noske_files/
+COPY --from=build /tmp/noske_files_2/*.deb /tmp/noske_files/
 
 ## Install noske dependencies
 ### deb packages
@@ -115,6 +131,9 @@ COPY conf/*.crt /etc/shibboleth/
 # COPY secrets/htaccess /var/www/.htaccess
 # COPY secrets/htpasswd /var/lib/bonito/htpasswd
 # COPY secrets/*.crt /etc/shibboleth/
+
+COPY --from=build /corpora /corpora
+
 
 ## HACK6: Link site-packages to dist-packages to help Python find these packages
 #          (e.g. creating subcorpus and keywords on it -> calls mkstats with popen which calls manatee internally)
