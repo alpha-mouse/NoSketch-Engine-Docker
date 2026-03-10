@@ -125,6 +125,7 @@ COPY conf/run.cgi /var/www/bonito/run.cgi
 COPY conf/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 COPY conf/shibboleth2.xml /etc/shibboleth/shibboleth2.xml
 COPY conf/*.crt /etc/shibboleth/
+COPY static /var/www/crystal
 
 ## These files should be updated through environment variables (HTACCESS,HTPASSWD,PUBLIC_KEY,PRIVATE_KEY)
 ##  but uncommenting the lines below enable creation of a custom image with secrets included
