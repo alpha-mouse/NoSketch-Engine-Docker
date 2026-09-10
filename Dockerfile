@@ -1,7 +1,7 @@
 # The builder image
 
-## From official Debian 12 Bookworm image pinned by its name bookworm-slim
-FROM debian:bookworm-slim AS build
+## From official Debian 13 Trixie image pinned by its name trixie-slim
+FROM debian:trixie-slim AS build
 
 ## Install noske dependencies
 ### deb packages
@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install -y \
         build-essential \
         libltdl-dev \
-        libpcre3-dev \
+        libpcre2-dev \
         bison \
         libsass-dev \
         python3-dev \
@@ -20,7 +20,8 @@ RUN apt-get update && \
         debmake \
         javahelper \
         autoconf-archive \
-        dh-python && \
+        dh-python \
+        pybuild-plugin-pyproject && \
     rm -rf /var/lib/apt/lists/*
 
 ## Build noske components
@@ -35,7 +36,7 @@ RUN tar -xvf manatee* && \
     debmake && \
     cp ../str_map.h ./hat-trie/test/str_map.h && \
     EDITOR=/bin/true dpkg-source -q --commit . fix_build && \
-    echo -e 'override_dh_auto_configure:\n\tdh_auto_configure -- \\\n\t\t--with-pcre' >> ./debian/rules && \
+    echo -e 'override_dh_auto_configure:\n\tdh_auto_configure -- \\\n\t\t--with-pcre2' >> ./debian/rules && \
     debuild -d -us -uc
 
 ### Bonito
@@ -49,6 +50,8 @@ RUN tar -xvf bonito* && \
     echo '# Remove unnecessary files and create symlink for utility command' >> debian/postinst && \
     echo 'rm -rf /var/www/bonito/.htaccess /tmp/noske_files/*' >> debian/postinst && \
     echo 'ln -sf /usr/bin/htpasswd /usr/local/bin/htpasswd' >> debian/postinst && \
+    echo '\noverride_dh_usrlocal:\n' >> debian/rules && \
+    chmod +x debian/rules && \
     debuild -d -us -uc
 
 ### GDEX
@@ -83,8 +86,8 @@ RUN tar -xvf crystal* && \
 
 # The actual image
 
-## From official Debian 12 Bookworm image pinned by its name bookworm-slim
-FROM debian:bookworm-slim
+## From official Debian 13 Trixie image pinned by its name trixie-slim
+FROM debian:trixie-slim
 
 ## Copy deb packages built in the previous step
 COPY --from=build /tmp/noske_files/*.deb /tmp/noske_files/
@@ -97,6 +100,8 @@ RUN apt-get update && \
         libapache2-mod-shib \
         python3-prctl \
         python3-openpyxl \
+        python3-html2text \
+        python3-legacy-cgi \
         /tmp/noske_files/*.deb && \
     rm -rf /var/lib/apt/lists/*
 
@@ -119,10 +124,10 @@ COPY conf/*.crt /etc/shibboleth/
 ## HACK6: Link site-packages to dist-packages to help Python find these packages
 #          (e.g. creating subcorpus and keywords on it -> calls mkstats with popen which calls manatee internally)
 #         TODO Seems to be a bug in the build system as manatee should be in .../site-packages/manatee folder
-RUN ln -s /usr/lib/python3.11/site-packages/manatee.py /usr/lib/python3/dist-packages/manatee.py && \
-    ln -s /usr/lib/python3.11/site-packages/_manatee.so /usr/lib/python3/dist-packages/_manatee.so && \
-    ln -s /usr/lib/python3.11/site-packages/_manatee.a /usr/lib/python3/dist-packages/_manatee.a && \
-    ln -s /usr/lib/python3.11/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la
+RUN ln -s /usr/lib/python3.13/site-packages/manatee.py /usr/lib/python3/dist-packages/manatee.py && \
+    ln -s /usr/lib/python3.13/site-packages/_manatee.so /usr/lib/python3/dist-packages/_manatee.so && \
+    ln -s /usr/lib/python3.13/site-packages/_manatee.a /usr/lib/python3/dist-packages/_manatee.a && \
+    ln -s /usr/lib/python3.13/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la
 
 # Start the container
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh", "$@"]
