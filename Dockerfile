@@ -58,7 +58,7 @@ RUN tar -xvf bonito* && \
 RUN tar -xvf gdex* && \
     cd gdex* && \
     debmake -b":python3" && \
-    sed -i "s/<version>/4.13.2/g" setup.py && \
+    sed -i "s/<version>/4.13.13/g" setup.py && \
     EDITOR=/bin/true dpkg-source -q --commit . fix_build && \
     echo -e 'override_dh_auto_test:\n\techo "Disabled autotest"' >> debian/rules && \
     debuild -d -us -uc
@@ -74,7 +74,7 @@ RUN tar -xvf crystal* && \
     debmake && \
     touch debian/changelog && \
     sed -e 's/npm install/npm install --unsafe-perm=true/' \
-        -e 's/VERSION ?= `git describe --tags --always`/VERSION=2.178.2/' \
+        -e 's/VERSION ?= `git describe --tags --always`/VERSION=2.238.7/' \
         -i Makefile && \
     cp ../page-dashboard.tag app/src/dashboard/page-dashboard.tag && \
     EDITOR=/bin/true dpkg-source -q --commit . fix_build && \
@@ -127,7 +127,8 @@ COPY conf/*.crt /etc/shibboleth/
 RUN ln -s /usr/lib/python3.13/site-packages/manatee.py /usr/lib/python3/dist-packages/manatee.py && \
     ln -s /usr/lib/python3.13/site-packages/_manatee.so /usr/lib/python3/dist-packages/_manatee.so && \
     ln -s /usr/lib/python3.13/site-packages/_manatee.a /usr/lib/python3/dist-packages/_manatee.a && \
-    ln -s /usr/lib/python3.13/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la
+    ln -s /usr/lib/python3.13/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la && \
+    mkdir /var/lib/bonito && chown -R www-data:www-data /var/lib/bonito
 
 # Start the container
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh", "$@"]
