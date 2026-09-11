@@ -8,11 +8,9 @@ import cgitb
 cgitb.enable()
 
 import sys, os
-if '/usr/lib/python3/dist-packages' not in sys.path:
-    sys.path.insert (0, '/usr/lib/python3/dist-packages')
 
 #import bonito
-bonito_path = '/usr/lib/python3/dist-packages/bonito'
+bonito_path = '/usr/local/lib/python3.13/dist-packages/bonito'
 
 if bonito_path not in sys.path:
     sys.path.insert(0, bonito_path)
@@ -105,7 +103,7 @@ if __name__ == "__main__":
     # e.g.: cat post.data | ./run.cgi http://app.sketchengine.eu 'https://app.sketchengine.eu/bonito/run.cgi/set_user_options' milos POST
     # or: ./run.cgi 'https://app.sketchengine.eu/bonito/run.cgi/get_user_options?json=...' milos
     username = None
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and len(sys.argv[1]) > 0:
         from urllib.parse import urlsplit
 
         us = urlsplit(sys.argv[1])

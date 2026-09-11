@@ -124,10 +124,13 @@ COPY conf/*.crt /etc/shibboleth/
 ## HACK6: Link site-packages to dist-packages to help Python find these packages
 #          (e.g. creating subcorpus and keywords on it -> calls mkstats with popen which calls manatee internally)
 #         TODO Seems to be a bug in the build system as manatee should be in .../site-packages/manatee folder
+## HACK7: Symlink bonito path to have less changes in run.cgi
+## HACK8: Create /var/lib/bonito folder
 RUN ln -s /usr/lib/python3.13/site-packages/manatee.py /usr/lib/python3/dist-packages/manatee.py && \
     ln -s /usr/lib/python3.13/site-packages/_manatee.so /usr/lib/python3/dist-packages/_manatee.so && \
     ln -s /usr/lib/python3.13/site-packages/_manatee.a /usr/lib/python3/dist-packages/_manatee.a && \
     ln -s /usr/lib/python3.13/site-packages/_manatee.la /usr/lib/python3/dist-packages/_manatee.la && \
+    ln -s /usr/lib/python3/dist-packages/bonito /usr/local/lib/python3.13/dist-packages/bonito && \
     mkdir /var/lib/bonito && chown -R www-data:www-data /var/lib/bonito
 
 # Start the container
