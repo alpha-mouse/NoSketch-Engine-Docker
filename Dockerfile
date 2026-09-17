@@ -68,6 +68,7 @@ RUN tar -xvf gdex* && \
 #### HACK3: Modify version directly in the Makefile instead of creating an environment variable
 #### HACK4: Copy modified page-dashboard.tag to be able to display custom citation message with URL (and restore banner)
 #### HACK5: modify URL_BONITO to be set dynamically to the request domain in every request
+#### HACK6: exclude non-words (punctuation) from wordlists by default (the checkbox still includes them); fail the build if upstream changed
 COPY conf/page-dashboard.tag /tmp/noske_files/
 RUN tar -xvf crystal* && \
     cd crystal-* && \
@@ -77,6 +78,10 @@ RUN tar -xvf crystal* && \
         -e 's/VERSION ?= `git describe --tags --always`/VERSION=2.238.7/' \
         -i Makefile && \
     cp ../page-dashboard.tag app/src/dashboard/page-dashboard.tag && \
+    sed -i 's/^\( *\)include_nonwords: true,$/\1include_nonwords: false,/' app/src/wordlist/WordlistStore.js && \
+    sed -i 's/this\.options\.include_nonwords = true$/this.options.include_nonwords = false/' app/src/wordlist/wordlist-tab-basic.tag && \
+    grep -q '^ *include_nonwords: false,$' app/src/wordlist/WordlistStore.js && \
+    grep -q 'this\.options\.include_nonwords = false$' app/src/wordlist/wordlist-tab-basic.tag && \
     EDITOR=/bin/true dpkg-source -q --commit . fix_build && \
     echo 'sed -e "s|URL_BONITO: \"http://.*|URL_BONITO: window.location.origin + \"/bonito/run.cgi/\",|" \' \
         >> debian/postinst && \
