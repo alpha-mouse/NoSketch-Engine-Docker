@@ -91,7 +91,8 @@ RUN tar -xvf crystal* && \
 
 RUN cp -r /tmp/noske_files /tmp/noske_files_2
 
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
 		python3-prctl \
 		python3-openpyxl \
 		/tmp/noske_files/*.deb
